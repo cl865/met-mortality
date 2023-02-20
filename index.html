@@ -1,0 +1,375 @@
+<!-- start html doc -->
+<!DOCTYPE html>
+<html>
+<head lang = "en">
+	<link rel = "stylesheet" type = "text/css" href = "style.css">
+	<meta charset = "UTF-8">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name = "viewport" content = "width=device-width, initial-scale = 1.0">
+	<title> Calculate </title>
+
+<!-- back end scripts to calculate probabilities -->
+ 	<script>
+
+		// helper function, fix probability interval, bound at 100 because we display percents
+		// returns x as a number, not as a string
+		function probInt(x) {
+			if (x < 0){
+				x = Math.max(0, x);
+			}
+			if(x > 100){
+				x = Math.min(100,x);
+			}
+			return x;
+		}
+
+		// calculations
+
+		function calc(){
+
+			// define variable, PT_cancer, 
+			// PT_other
+			
+			var PT_cancer = 0; 
+			var PT_other = 0;
+
+			age = document.querySelector('input[name = "age"]:checked').value;
+			PT_cancer = PT_cancer + 0*(age === "0 - 54") + 8.43*(age === "55 - 64") + 12.75*(age === "65 - 74") + 24.39*(age === "75 - 84") + 34.902*(age === "85+");
+			PT_other = PT_other + 0*(age === "0 - 54") + 30.37*(age === "55 - 64") + 56.28*(age === "65 - 74") + 75.23*(age === "75 - 84") + 96.34*(age === "85+");
+
+			// consider sex
+			var sex = document.querySelector('input[name="sex"]:checked').value;
+			PT_cancer = PT_cancer + 4.129*(sex === "male");
+			PT_other = PT_other + 12.45*(sex === "male");
+
+			// consider race
+			var race = document.querySelector('input[name="race"]:checked').value;
+			PT_cancer = PT_cancer + 12.12*(race === "white") + 11.84*(race === "black") + 17.59*(race === "ai_an");
+			PT_other = PT_other + 24.57*(race === "black") + 10.88*(race === "asian") + 12.47*(race === "ai_an");
+
+			// consider primary tumor
+			var tumor = document.querySelector('#primary-tumor').value;
+			PT_cancer = PT_cancer + 63.60*(tumor === "nsclc") + 89.08*(tumor === "pancreas") + 15.85*(tumor === "breast") + 66.68*(tumor === "sclc") + 73*(tumor === "stomach") + 56.76*(tumor === "kidney") + 43.23*(tumor === "ovary") + 74.44*(tumor === "esophagus") + 100*(tumor === "liver") + 31.86*(tumor === "melanoma") + 60.35*(tumor === "bladder") + 38.87*(tumor === "soft tissue") + 52.29*(tumor === "cervix") + 4.43*(tumor === "thyroid");
+
+			PT_other = PT_other + 64.28*(tumor === "nsclc") + 77.51*(tumor === "breast") + 100*(tumor === "prostate") + 58.72*(tumor === "sclc") + 26.21*(tumor === "stomach") + 47.26*(tumor === "kidney") + 38.06*(tumor === "ovary") + 11.11*(tumor === "esophagus") + 41.22*(tumor === "liver") + 60.53*(tumor === "melanoma") + 67.26*(tumor === "bladder") + 78.61*(tumor === "soft tissue") + 70.91*(tumor === "cervix") + 83.2*(tumor === "thyroid");
+
+			// consider mets
+			var bone = document.querySelector('input[name="bone"]:checked').value;
+			var brain = document.querySelector('input[name="brain"]:checked').value;
+			var liver = document.querySelector('input[name="liver"]:checked').value;
+			var lung = document.querySelector('input[name="lung"]:checked').value;
+
+			// consider mets
+
+			PT_cancer = PT_cancer + 12.56*(bone === "yes") + 18.61*(brain === "yes") + 20.05*(liver === "yes") + 4.40*(lung === "yes");
+			PT_other = PT_other + 22.92*(bone === "no") + 37*(brain === "no") + 16.72*(liver === "no") + 3.72*(lung === "yes");
+
+			// consider T stage
+			var t_stage = document.querySelector('input[name = "t_stage"]:checked').value;
+			PT_cancer = PT_cancer + 23.15*(t_stage === "t0") + 10.89*(t_stage === "t2") + 10.41*(t_stage === "t3") + 17.88*(t_stage === "t4");
+			PT_other = PT_other + 19.25*(t_stage === "t0") + 27.1*(t_stage === "t1") + 12.41*(t_stage === "t2") + 8.48*(t_stage === "t3");
+
+
+			// consider N stage
+			var n_stage = document.querySelector('input[name = "n_stage"]:checked').value;
+			PT_cancer = PT_cancer + 4.2*(n_stage === "n1") + 11.3*(n_stage === "n2") + 10.49*(n_stage === "n3"); 
+			PT_other = PT_other + 30.65*(n_stage === "n0") + 10.19*(n_stage === "n1") + 2.11*(n_stage === "n3");
+
+			
+
+			// map points to 1 year survival, via linear regression - intercept
+			var surv1_cancer = Math.round((0.137497 + 0.004176*PT_cancer)*100);
+			var surv3_cancer = Math.round((0.2748 + 0.004427*PT_cancer)*100);
+			var surv5_cancer = Math.round((0.3269 + 0.004372*PT_cancer)*100);
+			var surv1_other = Math.round((-0.219 + 0.001279*PT_other)*100);
+			var surv3_other = Math.round((-0.247 + 0.00153*PT_other)*100);
+			var surv5_other = Math.round((-0.261 + 0.00166*PT_other)*100);
+
+			document.getElementById('surv1_cancer').innerHTML = probInt(surv1_cancer) +'%';
+			document.getElementById('surv3_cancer').innerHTML = probInt(surv3_cancer) +'%';
+			document.getElementById('surv5_cancer').innerHTML = probInt(surv5_cancer) +'%';
+			document.getElementById('surv1_other').innerHTML = probInt(surv1_other) + '%';
+
+			document.getElementById('surv3_other').innerHTML = probInt(surv3_other) +'%';
+			document.getElementById('surv5_other').innerHTML = probInt(surv5_other) +'%'
+			
+			// for tmp checks
+			//document.getElementById('display').innerHTML = PT_other
+
+			}
+
+		
+
+ 	</script>
+
+
+</head>
+
+
+<body>
+
+<h1 class = "main-title" align = "center"> Predicting Metastatic Cancer Mortality</h1>
+
+<!-- interactive nav bar, toggle between calculator and about page-->
+
+<div align = "center">
+	<ul id = "nav">
+		<li><a href = "index.html" class = "active-page"> CALCULATE </a></li>
+		<li><a href = "about.html"> ABOUT </a></li>
+	<ul>
+</div>
+
+<!-- begin calculator -->
+<!-- set background -->
+
+<div style="background-color: #e8f5feff; border-radius: 15px; width: 380px; margin: 0 auto">
+
+	<!-- build form -->
+	<div style="width: 380px; margin: 0 auto">
+		<form style = "font-size: 16px" method="post">
+			
+			<br>
+
+			<!-- age -->
+
+			<h4> Age <span style="font-size: 12px"> (years) </span>: </h4>
+
+			<div class = "radio-toolbar" style = "text-align: center; padding-top: 5px">
+
+				<input type="radio" id = "age0" name = "age" value = "0 - 54" checked>
+				<label for = "age0" style = "margin-left: 10px"> 0 - 54 </label>
+
+				<input type="radio" id = "age55" name = "age" value = "55 - 64">
+				<label for = "age55" style = "margin-left: 10px"> 55 - 64 </label>
+
+				<input type="radio" id = "age65" name = "age" value = "65 - 74">
+				<label for = "age65" style = "margin-left: 10px"> 65 - 74 </label>
+
+				<input type="radio" id = "age75" name = "age" value = "75 - 84">
+				<label for = "age75" style = "margin-left: 10px"> 75 - 84 </label>
+
+				<input type="radio" id = "age85" name = "age" value = "85+">
+				<label for = "age85" style = "margin-left: 10px"> 85+ </label>
+
+			</div>
+
+			<br>
+
+			<!-- sex -->
+
+			<div class = "radio-toolbar">
+
+				<h4> Sex: </h4>
+
+				<input type = "radio" id = "sexMale" name = "sex" value = "male" checked>  
+				<label for = "sexMale" style="margin-left: 10px"> Male </label>
+
+				<input type = "radio" id = "sexFemale" name = "sex" value = "female">
+				<label for = "sexFemale"> Female </label>
+			</div>
+
+			<br>
+
+			<!-- race -->
+			
+			<h4> Race: </h4>
+
+			<div class = "radio-toolbar" style="text-align: center; padding-top: 5px">
+
+				<input type = "radio" id = "white" name = "race" value = "white" checked>
+				<label for = "white" style="margin-left: 10 px"> White </label>
+
+				<input type = "radio" id = "black" name = "race" value = "black">
+				<label for = "black"> Black </label>
+
+				<input type = "radio" id = "asian" name = "race" value = "asian">
+				<label for = "asian"> Asian </label>
+
+				<input type = "radio" id = "aian" name = "race" 
+				value = "ai_an">
+				<label for = "aian"> American Indian or Alaska Native </label>
+
+			</div>
+			
+			<br>
+
+			<!-- tumor primary -->
+
+			<h4> Primary Tumor: </h4>
+
+			<select name = "primary" id = "primary-tumor">
+				<option value = "nsclc"> NSCLC </option>
+				<option value = "sclc"> SCLC </option>
+				<option value = "pancreas"> Pancreas </option>
+				<option value = "breast"> Breast </option>
+				<option value = "prostate"> Prostate </option>
+				<option value = "stomach"> Stomach </option>
+				<option value = "kidney"> Kidney </option>
+				<option value = "ovary"> Ovary </option>
+				<option value = "esophagus"> Esophagus </option>
+				<option value = "liver"> Liver </option>
+				<option value = "melanoma"> Melanoma </option>
+				<option value = "bladder"> Bladder </option>
+				<option value = "soft tissue"> Soft Tissue </option>
+				<option value = "cervix"> Cervix </option>
+				<option value = "thyroid"> Thyroid </option>
+			</select>
+
+			<br><br>
+
+			<!-- mets portion of form as a table -->
+		
+			<h4> Metastases: </h4>
+
+			<table style="padding-left: 40px">
+			<tbody>
+			<tr>
+			<td> Bone </td>
+			<td> 	
+				<div class = "radio-toolbar" style="padding-left: 20px">
+					<input type = "radio" id = "boneYes" name = "bone" value = "yes">
+					<label for = "boneYes" style = "margin-left: 10px"> Yes </label>
+
+					<input type = "radio" id = "boneNo" name = "bone" value = "no" checked>
+					<label for = "boneNo"> No </label>
+				</div>
+			</td>
+			</tr>
+			<tr>
+			<td> Brain </td>
+			<td>
+				<div class = "radio-toolbar" style="padding-left: 20px">
+					<input type = "radio" id = "brainYes" name = "brain" value = "yes">
+					<label for = "brainYes" style = "margin-left: 10px"> Yes </label>
+
+					<input type = "radio" id = "brainNo" name = "brain" value = "no" checked>
+					<label for = "brainNo"> No </label>
+				</div>
+			</td>
+			</tr>
+			<tr>
+			<td> Liver </td>
+			<td> 
+				<div class = "radio-toolbar" style="padding-left: 20px">
+					<input type = "radio" id = "LiverYes" name = "liver" value = "yes">
+					<label for = "LiverYes" style = "margin-left: 10px"> Yes </label>
+
+					<input type = "radio" id = "LiverNo" name = "liver" value = "no" checked>
+					<label for = "LiverNo"> No </label>
+				</div>
+			</td>
+			</tr>
+			<tr>
+			<td> Lung</td>
+			<td> 
+				<div class = "radio-toolbar" style="padding-left: 20px">
+					<input type = "radio" id = "LungYes" name = "lung" value = "yes">
+					<label for = "LungYes" style = "margin-left: 10px"> Yes </label>
+
+					<input type = "radio" id = "LungNo" name = "lung" value = "no" checked>
+					<label for = "LungNo"> No </label>
+				</div>
+			</td>
+			</tr>
+			</tbody>
+			</table>
+
+			<br>
+
+			<!--t stage -->
+
+			<div class = "radio-toolbar" style = "padding-top: 5px">
+
+				<h4> T-stage: </h4>
+
+				<input type = "radio" id = "t0" name = "t_stage" value = "t0" checked>
+				<label for = "t0" style="margin-left: 10 px"> T0/TX </label>
+
+				<input type = "radio" id = "t1" name = "t_stage" value = "t1">
+				<label for = "t1"> T1 </label>
+
+				<input type = "radio" id = "t2" name = "t_stage" value = "t2">
+				<label for = "t2"> T2 </label>
+
+				<input type = "radio" id = "t3" name = "t_stage" value = "t3">
+				<label for = "t3"> T3 </label>
+
+				<input type = "radio" id = "t4" name = "t_stage" value = "t4">
+				<label for = "t4"> T4 </label>
+
+			</div>
+
+			<br>
+
+			<!-- n stage -->
+
+			<div class = "radio-toolbar">
+				<h4> N-stage: </h4>
+
+				<input type = "radio" id = "n0" name = "n_stage" value = "n0" checked>
+				<label for = "n0" style="margin-left: 10 px"> N0/NX </label>
+
+				<input type = "radio" id = "n1" name = "n_stage" value = "n1">
+				<label for = "n1"> N1 </label>
+
+				<input type = "radio" id = "n2" name = "n_stage" value = "n2">
+				<label for = "n2"> N2 </label>
+
+				<input type = "radio" id = "n3" name = "n_stage" value = "n3">
+				<label for = "n3"> N3 </label>
+			</div>
+
+			<br><br>
+
+		</form>
+
+			<!-- wrap submit button for alignment -->
+			<div style="text-align: center">
+				<input type="submit" value = "Submit" onclick="calc();"> 
+			</div>
+
+	</div>
+
+	<!-- out of form div, in results div -->
+
+	<!-- results div is the same size as forms div for alignment -->
+	<div class = "form-submit" style="width: 360px; margin: 0 auto; padding-left: 0px">
+		<table style="padding-top:25px; table-layout: fixed; width: 300px", align = "center">
+			<thead style="background-color: #dddddd;">
+				<tr>
+					<th style="font-weight:bold; padding-top: 5px; padding-bottom: 5px"> Outcome </th>
+					<th style="font-weight:bold"> Cancer </th>
+					<th style="font-weight:bold"> Other </th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td> 1-year </td>
+					<td> <span id = "surv1_cancer"></span> </td>
+					<td> <span id = "surv1_other"></span> </td>
+					
+				</tr>
+				<tr>
+					<td> 3-year </td>
+					<td> <span id = "surv3_cancer"></span> </td>
+					<td> <span id = "surv3_other"></span> </td>
+					
+					
+				</tr>
+				<tr>
+					<td> 5-year </td>
+					<td> <span id = "surv5_cancer"></span> </td>
+					<td> <span id = "surv5_other"></span> </td>
+					
+				</tr>
+			</tbody>
+		</table>
+	<br>
+
+	</div>
+
+</div>
+
+</body>
+
+</html>
